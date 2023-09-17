@@ -1,0 +1,769 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">xxlchess</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+//import org.reflections.Reflections;
+//import org.reflections.scanners.Scanners;
+import processing.core.PApplet;
+import processing.core.PImage;
+import processing.data.JSONObject;
+import processing.data.JSONArray;
+import processing.core.PFont;
+import processing.event.MouseEvent;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.awt.Font;
+import java.io.*;
+import java.util.*;
+import javax.sound.sampled.*;
+
+import org.checkerframework.checker.units.qual.C;
+
+/**
+     * The main app to start the game.
+     *  Including all the keyboard and mouse detection.
+     *  The main game loop is contain in draw method
+     */
+
+public class App extends PApplet {
+
+    /**
+     * initialise the width , height , spritesize , FPS , bottombar and randomGenerator of window 
+     */
+    public static final int SPRITESIZE = 480;
+    public static final int CELLSIZE = 48;
+    public static final int SIDEBAR = 120;
+    public static final int BOARD_WIDTH = 14;
+
+<span class="fc" id="L37">    public static int WIDTH = CELLSIZE*BOARD_WIDTH+SIDEBAR;</span>
+<span class="fc" id="L38">    public static int HEIGHT = BOARD_WIDTH*CELLSIZE;</span>
+    
+    public static final int FPS = 60;
+
+
+	public Random rand;
+    // Check if the player is click or not 
+<span class="fc" id="L45">    public boolean click = false;</span>
+    public String configPath;
+    public String playerIsWhite;
+<span class="fc" id="L48">    public boolean test = false;</span>
+
+    // The layout of board and message font
+    public String layout;
+    public PFont message;
+
+    // Player's speed and maxMoveTime 
+    public double playerSpeed;
+    public int maxMoveTime;
+    
+    // Player targetTile and enemyTargetTile
+    public Tile targetTile;
+    public Tile enemyTargetTile;
+    
+    //The board object
+    public Board board;
+
+    // Gameover condition
+    public boolean gameOver;
+
+    // Check and checkmate condition
+<span class="fc" id="L69">    public boolean playerCheck = false;</span>
+<span class="fc" id="L70">    public boolean enemyCheck = false;</span>
+<span class="fc" id="L71">    public boolean playerCheckMate = false;</span>
+<span class="fc" id="L72">    public boolean enemyCheckMate =false;</span>
+<span class="fc" id="L73">    public boolean staleMate = false;</span>
+
+    // Must defind King is used to detect wheather player select the wrong piece during check
+<span class="fc" id="L76">    public boolean mustDefineKing = true;</span>
+<span class="fc" id="L77">    public int flashCount= 0;</span>
+<span class="fc" id="L78">    public int flashDuration = 30;</span>
+
+    // Current moving piece for player and enemy
+    public Piece playerPiece;
+    public boolean enemyCheckFlag;
+    public Piece enemyPiece;
+    
+    // Round control
+    public Piece currentMovingPiece;
+<span class="fc" id="L87">    public Piece currentMovingEnemy = new Pawn(0,0,1,true,new Tile(0,0));</span>
+    // Round control
+<span class="fc" id="L89">    public boolean playerRound = true;</span>
+<span class="fc" id="L90">    public boolean enemySelect = true;</span>
+
+    //Time control
+    public int playerTime;
+    public int enemyTime;
+<span class="fc" id="L95">    public int playerCounter = 0;</span>
+<span class="fc" id="L96">    public int enemyCounter = 0;</span>
+    public int playerIncrement;
+    public int enemyIncrement;
+
+    //Castleing
+<span class="fc" id="L101">    public boolean rightCastle = false;;</span>
+<span class="fc" id="L102">    public boolean leftCastle = false;</span>
+    public Tile rookCastleTile;
+
+    //Sound effect
+    Clip bgmClip;
+    Clip goClip;
+    Clip loseClip;
+    Clip eatClip;
+    Clip selectCilp;
+    Clip winClip;
+    Clip checkClip;
+
+
+<span class="fc" id="L115">    public App() {</span>
+        // Construt the objects here
+<span class="fc" id="L117">        this.configPath = &quot;config.json&quot;;</span>
+<span class="fc" id="L118">        this.board = new Board();</span>
+<span class="fc" id="L119">        this.rand = new Random();</span>
+<span class="fc" id="L120">        this.targetTile = null;</span>
+        
+
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * Initialise the setting of the window size.
+    */
+    public void settings() {
+<span class="fc" id="L129">        size(WIDTH, HEIGHT);</span>
+<span class="fc" id="L130">    }</span>
+
+    /**
+     * Load all resources such as images. Initialise the elements such as the player, enemies and map elements.
+    */
+    public void setup() {
+<span class="fc" id="L136">        frameRate(FPS);</span>
+        // Set up the gameOver flag
+<span class="fc" id="L138">        gameOver = false;</span>
+        //Set up the message
+<span class="fc" id="L140">        message = createFont(&quot;Arial&quot;,16,true);</span>
+
+		// load config
+<span class="fc" id="L143">        JSONObject conf = loadJSONObject(new File(this.configPath));</span>
+<span class="fc" id="L144">        layout = conf.getString(&quot;layout&quot;);</span>
+<span class="fc" id="L145">        playerIsWhite = conf.getString(&quot;player_colour&quot;);</span>
+<span class="fc" id="L146">        playerSpeed = conf.getDouble(&quot;piece_movement_speed&quot;);</span>
+<span class="fc" id="L147">        maxMoveTime = conf.getInt(&quot;max_movement_time&quot;);</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">        if (playerIsWhite.equals(&quot;white&quot;)) {</span>
+<span class="fc" id="L149">            playerRound = true;</span>
+        }else{
+<span class="nc" id="L151">            playerRound = false;</span>
+        }
+<span class="fc" id="L153">        JSONObject timeControl = conf.getJSONObject(&quot;time_controls&quot;);</span>
+<span class="fc" id="L154">        JSONObject playerObject = timeControl.getJSONObject(&quot;player&quot;);</span>
+<span class="fc" id="L155">        JSONObject cpu = timeControl.getJSONObject(&quot;cpu&quot;);</span>
+<span class="fc" id="L156">        playerTime = playerObject.getInt(&quot;seconds&quot;);</span>
+<span class="fc" id="L157">        enemyTime = cpu.getInt(&quot;seconds&quot;);</span>
+<span class="fc" id="L158">        playerIncrement = playerObject.getInt(&quot;increment&quot;);</span>
+<span class="fc" id="L159">        enemyIncrement = cpu.getInt(&quot;increment&quot;);</span>
+
+        // Generate all the pieces ny reading the layout
+       
+<span class="fc" id="L163">        board.gereratePiece();</span>
+        try{
+<span class="fc" id="L165">        board.setPiece(layout,playerIsWhite);</span>
+<span class="nc" id="L166">        }catch(Exception e){</span>
+<span class="nc" id="L167">            System.out.println(&quot;Layout is not correct!&quot;);</span>
+<span class="nc" id="L168">            stop();</span>
+<span class="fc" id="L169">        }</span>
+        
+        //Load image for enemy and player
+<span class="fc bfc" id="L172" title="All 2 branches covered.">        for(Piece player : board.playerCollection) {</span>
+<span class="fc" id="L173">            player.setImage(this);</span>
+<span class="fc" id="L174">            player.setSpeed(playerSpeed);</span>
+<span class="fc" id="L175">            player.setMaxMoveTime(maxMoveTime);</span>
+<span class="fc" id="L176">        }</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        for(Piece enemy : board.enemyCollection) {</span>
+<span class="fc" id="L178">            enemy.setImage(this);</span>
+<span class="fc" id="L179">            enemy.setSpeed(playerSpeed);</span>
+<span class="fc" id="L180">            enemy.setMaxMoveTime(maxMoveTime);</span>
+<span class="fc" id="L181">        }</span>
+
+        //Load backgroundmusic and sound effect 
+<span class="fc" id="L184">        String bgm = &quot;src/main/resources/bgm.wav&quot;;</span>
+<span class="fc" id="L185">        String eat = &quot;src/main/resources/eat.wav&quot;;</span>
+<span class="fc" id="L186">        String go = &quot;src/main/resources/go.wav&quot;;</span>
+<span class="fc" id="L187">        String lose = &quot;src/main/resources/lose.wav&quot;;</span>
+<span class="fc" id="L188">        String select = &quot;src/main/resources/select.wav&quot;;</span>
+<span class="fc" id="L189">        String winwin = &quot;src/main/resources/winwin.wav&quot;;</span>
+<span class="fc" id="L190">        String checkclip = &quot;src/main/resources/warn.wav&quot;;</span>
+
+        try {
+<span class="fc" id="L193">            File soundFile1 = new File(bgm);</span>
+<span class="fc" id="L194">            AudioInputStream audioInputStream1 = AudioSystem.getAudioInputStream(soundFile1);</span>
+<span class="fc" id="L195">            bgmClip = AudioSystem.getClip();</span>
+<span class="fc" id="L196">            bgmClip.open(audioInputStream1);</span>
+            
+
+<span class="fc" id="L199">            File soundFile2 = new File(go);</span>
+<span class="fc" id="L200">            AudioInputStream audioInputStream2 = AudioSystem.getAudioInputStream(soundFile2);</span>
+<span class="fc" id="L201">            goClip = AudioSystem.getClip();</span>
+<span class="fc" id="L202">            goClip.open(audioInputStream2);</span>
+
+<span class="fc" id="L204">            File soundFile3 = new File(select);</span>
+<span class="fc" id="L205">            AudioInputStream audioInputStream3 = AudioSystem.getAudioInputStream(soundFile3);</span>
+<span class="fc" id="L206">            selectCilp = AudioSystem.getClip();</span>
+<span class="fc" id="L207">            selectCilp.open(audioInputStream3);</span>
+
+<span class="fc" id="L209">            File soundFile4 = new File(eat);</span>
+<span class="fc" id="L210">            AudioInputStream audioInputStream4 = AudioSystem.getAudioInputStream(soundFile4);</span>
+<span class="fc" id="L211">            eatClip = AudioSystem.getClip();</span>
+<span class="fc" id="L212">            eatClip.open(audioInputStream4);</span>
+
+<span class="fc" id="L214">            File soundFile5 = new File(winwin);</span>
+<span class="fc" id="L215">            AudioInputStream audioInputStream5 = AudioSystem.getAudioInputStream(soundFile5);</span>
+<span class="fc" id="L216">            winClip = AudioSystem.getClip();</span>
+<span class="fc" id="L217">            winClip.open(audioInputStream5);</span>
+
+<span class="fc" id="L219">            File soundFile6 = new File(lose);</span>
+<span class="fc" id="L220">            AudioInputStream audioInputStream6 = AudioSystem.getAudioInputStream(soundFile6);</span>
+<span class="fc" id="L221">            loseClip = AudioSystem.getClip();</span>
+<span class="fc" id="L222">            loseClip.open(audioInputStream6);</span>
+
+<span class="fc" id="L224">            File soundFile7 = new File(checkclip);</span>
+<span class="fc" id="L225">            AudioInputStream audioInputStream7 = AudioSystem.getAudioInputStream(soundFile7);</span>
+<span class="fc" id="L226">            checkClip = AudioSystem.getClip();</span>
+<span class="fc" id="L227">            checkClip.open(audioInputStream7);</span>
+            
+
+<span class="fc" id="L230">        }catch(Exception e) {</span>
+<span class="fc" id="L231">            e.printStackTrace();</span>
+<span class="fc" id="L232">        }</span>
+<span class="fc" id="L233">        bgmClip.start();        </span>
+<span class="fc" id="L234">    }</span>
+
+    /**
+     * Receive key pressed signal from the keyboard.
+    */
+    public void keyPressed(){
+<span class="fc bfc" id="L240" title="All 2 branches covered.">        if (key == 'e') {</span>
+<span class="fc" id="L241">            gameOver = true;</span>
+<span class="fc" id="L242">            bgmClip.stop();</span>
+        }
+<span class="fc bfc" id="L244" title="All 2 branches covered.">        if (gameOver == true) {</span>
+<span class="fc bfc" id="L245" title="All 2 branches covered.">            if (key == 'r'){</span>
+<span class="fc" id="L246">                playerCheckMate = false;</span>
+<span class="fc" id="L247">                enemyCheckMate = false;</span>
+<span class="fc" id="L248">                PApplet.main(&quot;XXLChess.App&quot;);</span>
+            }
+        }
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">        if (key == 'm') {</span>
+<span class="nc" id="L252">            bgmClip.setFramePosition(0);</span>
+<span class="nc" id="L253">            bgmClip.start();</span>
+        }
+
+<span class="fc" id="L256">    }</span>
+    
+   
+    /**
+     * Receive mouse press signal from the mouse.
+     * Mainly used for controling the piece
+    */
+    @Override
+    public void mousePressed(MouseEvent e) {
+      
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        for(Piece player : board.playerCollection) {</span>
+        //Check if the mouse has been click yet 
+<span class="fc bfc" id="L268" title="All 4 branches covered.">            if (!this.click &amp;&amp; playerRound){</span>
+<span class="fc bfc" id="L269" title="All 4 branches covered.">                if(e.getY() &gt;= player.getY() &amp;&amp; e.getY() &lt;= player.getY()+ 48 &amp;&amp;</span>
+<span class="fc bfc" id="L270" title="All 4 branches covered.">                e.getX() &gt;= player.getX() &amp;&amp; e.getX() &lt;= player.getX()+ 48){</span>
+                    // Sound effect when player choose a piece
+<span class="fc" id="L272">                    selectCilp.setFramePosition(0);</span>
+<span class="fc" id="L273">                    selectCilp.start();</span>
+<span class="fc" id="L274">                    player.press();</span>
+<span class="fc" id="L275">                    playerPiece = player;</span>
+<span class="fc" id="L276">                    board.addAllTiles();</span>
+
+                    // Check all avaliable move option by using the legalMove function
+<span class="fc bfc" id="L279" title="All 2 branches covered.">                    if (enemyPiece != null){</span>
+<span class="fc" id="L280">                        ArrayList&lt;Piece&gt; legalPiece = board.playerLegalMove1(board.playerKing, enemyPiece);</span>
+<span class="pc bpc" id="L281" title="1 of 4 branches missed.">                        if(legalPiece.size() == 0 || legalPiece.size() == 0) {</span>
+<span class="fc" id="L282">                            enemyCheckFlag = true;</span>
+                        }
+                    }
+
+                    // If king is currently checked by enemy, only give the player legal move 
+<span class="pc bpc" id="L287" title="1 of 6 branches missed.">                    if(enemyCheck == true &amp;&amp; enemyPiece != null &amp;&amp; ! (player instanceof King))  {</span>
+<span class="fc" id="L288">                        ArrayList&lt;Piece&gt; legalPiece = board.playerLegalMove1(board.playerKing, enemyPiece);</span>
+<span class="fc" id="L289">                        ArrayList&lt;Tile&gt; legalTile = board.playerLegalMove2(board.playerKing, enemyPiece); </span>
+                       
+                        
+<span class="fc bfc" id="L292" title="All 2 branches covered.">                        for(int i = 0; i &lt; legalPiece.size(); i ++) {</span>
+<span class="fc bfc" id="L293" title="All 2 branches covered.">                            if(legalPiece.get(i) == player){</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">                                if(legalTile.get(i).getPiece() == null){</span>
+<span class="nc" id="L295">                                    player.lsTile.add(legalTile.get(i));</span>
+                                }else{
+<span class="fc" id="L297">                                    player.lsTile.add(legalTile.get(i));</span>
+<span class="fc" id="L298">                                    player.capturedTiles.add(legalTile.get(i));</span>
+
+                                }
+                               
+                            }
+
+                        }
+                        
+                    // If not in checking, just add tiles normally but need to check whether it is pin or not 
+<span class="fc" id="L307">                    }else{ </span>
+<span class="fc" id="L308">                        player.targetTile(this.board);</span>
+<span class="fc bfc" id="L309" title="All 2 branches covered.">                        if (!(player instanceof King)){</span>
+<span class="fc" id="L310">                            player.Pin(this.board);</span>
+                        }
+    
+                    
+                                        
+                    }
+                    //Checkmate and stalemate condition
+<span class="pc bpc" id="L317" title="1 of 8 branches missed.">                    if (player instanceof King &amp;&amp; player.lsTile.isEmpty() &amp;&amp; enemyCheckFlag &amp;&amp; enemyCheck){ </span>
+<span class="nc" id="L318">                        enemyCheckMate = true;</span>
+<span class="fc bfc" id="L319" title="All 6 branches covered.">                    }else if(player instanceof King &amp;&amp; player.lsTile.isEmpty() &amp;&amp; enemyCheckFlag){</span>
+<span class="fc" id="L320">                        staleMate = true;</span>
+                    }else{
+<span class="fc" id="L322">                        enemyCheckFlag = false;</span>
+                    }
+                   
+                        
+                    // Play the sound effect and check if the current piece is having legal move during check.
+<span class="fc bfc" id="L327" title="All 2 branches covered.">                    if(enemyCheck == true)</span>
+<span class="pc bpc" id="L328" title="1 of 4 branches missed.">                    if(player.lsTile.size() == 0 &amp;&amp; enemyCheck == true){</span>
+<span class="fc" id="L329">                        checkClip.setFramePosition(0);</span>
+<span class="fc" id="L330">                        checkClip.start();</span>
+<span class="fc" id="L331">                        mustDefineKing = true;</span>
+                    }else{
+<span class="fc" id="L333">                        mustDefineKing = false;</span>
+                    }
+<span class="fc" id="L335">                    this.click = true;  </span>
+                    
+                }
+            }
+            // If the mouse pressed piece, give the choice and set isPressed equal to false
+            else{
+<span class="fc bfc" id="L341" title="All 2 branches covered.">                if (player.isPressed) {</span>
+<span class="fc bfc" id="L342" title="All 2 branches covered.">                    if (player.lsTile.size() == 0){</span>
+<span class="fc" id="L343">                        player.isPressed = false;</span>
+                    }
+<span class="fc bfc" id="L345" title="All 2 branches covered.">                    for (Tile tile : player.lsTile) {</span>
+<span class="fc bfc" id="L346" title="All 4 branches covered.">                        if((e.getY() &gt;= tile.getY() &amp;&amp; e.getY() &lt;= tile.getY() + 48 &amp;&amp;</span>
+<span class="fc bfc" id="L347" title="All 4 branches covered.">                        e.getX() &gt;= tile.getX() &amp;&amp; e.getX() &lt;= tile.getX()+ 48)) {</span>
+<span class="fc" id="L348">                            currentMovingPiece = player;</span>
+<span class="fc" id="L349">                            this.targetTile = tile;</span>
+<span class="fc" id="L350">                            player.isPressed = false;</span>
+<span class="fc" id="L351">                            player.need_clear = true;</span>
+<span class="fc" id="L352">                            break;</span>
+                            
+                        }else{
+                            //not showing the color
+<span class="fc" id="L356">                            player.isPressed = false;</span>
+                            
+                                    
+                        }
+<span class="fc" id="L360">                    }</span>
+<span class="fc" id="L361">                    this.click = false;</span>
+                
+                }    
+            }
+            // Clear all the tiles after one move
+<span class="fc bfc" id="L366" title="All 2 branches covered.">            if (player.need_clear){</span>
+<span class="fc" id="L367">                player.lsTile.clear();</span>
+<span class="fc" id="L368">                player.capturedTiles.clear();</span>
+<span class="fc" id="L369">                player.historyTiles.clear();</span>
+<span class="fc" id="L370">                player.need_clear = false;</span>
+            }
+<span class="fc" id="L372">        }</span>
+        
+        
+    
+       
+<span class="fc" id="L377">}</span>
+
+   
+
+    /**
+     * Draw all elements in the game by current frame. 
+    */
+    public void draw() {
+        //Main game loop 
+        // Play the background music 
+<span class="fc bfc" id="L387" title="All 2 branches covered.">        if (playerCheck) {</span>
+<span class="fc" id="L388">            checkClip.setFramePosition(0);</span>
+<span class="fc" id="L389">            checkClip.start();</span>
+        }
+        //Win or lose condition and show the message correctly
+<span class="fc bfc" id="L392" title="All 2 branches covered.">        if (staleMate) {</span>
+<span class="fc" id="L393">            gameOver = true;</span>
+<span class="fc" id="L394">            textFont(message,16);                  </span>
+<span class="fc" id="L395">            fill(255,0,0);                     </span>
+<span class="fc" id="L396">            text(&quot;Stalemate - draw&quot;,672,350);</span>
+<span class="fc" id="L397">            return;</span>
+        }
+<span class="fc bfc" id="L399" title="All 2 branches covered.">        if (playerTime == 0) {</span>
+<span class="fc" id="L400">            loseClip.start();</span>
+<span class="fc" id="L401">            gameOver = true;</span>
+<span class="fc" id="L402">            textFont(message,16);                  </span>
+<span class="fc" id="L403">            fill(255,0,0);                     </span>
+<span class="fc" id="L404">            text(&quot;You lost on time&quot;,672,300);</span>
+<span class="fc" id="L405">            text(&quot;Press r to restart&quot;,672,350);</span>
+<span class="fc" id="L406">            text(&quot;the game&quot;,672,370);</span>
+<span class="fc" id="L407">            return;</span>
+<span class="pc bpc" id="L408" title="1 of 2 branches missed.">        }else if (enemyTime == 0) {</span>
+<span class="nc" id="L409">            winClip.start();</span>
+<span class="nc" id="L410">            gameOver = true;</span>
+<span class="nc" id="L411">            textFont(message,16);                  </span>
+<span class="nc" id="L412">            fill(255,0,0);                     </span>
+<span class="nc" id="L413">            text(&quot;You won on time&quot;,672,300);</span>
+<span class="nc" id="L414">            text(&quot;Press r to restart&quot;,672,350);</span>
+<span class="nc" id="L415">            text(&quot;the game&quot;,672,370);</span>
+<span class="nc" id="L416">            return;</span>
+<span class="pc bpc" id="L417" title="2 of 4 branches missed.">        }else if (playerCheckMate || ! board.enemyKing.isAlive) {</span>
+<span class="nc" id="L418">            winClip.start();</span>
+<span class="nc" id="L419">            gameOver = true;</span>
+<span class="nc" id="L420">            textFont(message,16);                  </span>
+<span class="nc" id="L421">            fill(255,0,0);                     </span>
+<span class="nc" id="L422">            text(&quot;You won by &quot;,672,350);</span>
+<span class="nc" id="L423">            text(&quot;checkmate&quot;,672,370);</span>
+<span class="nc" id="L424">            text(&quot;Press r to restart&quot;,672,390);</span>
+<span class="nc" id="L425">            text(&quot;the game&quot;,672,410);</span>
+<span class="nc" id="L426">            ArrayList&lt;Piece&gt; contributionList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L427">            contributionList = board.enemyKing.contributingCheck(board);</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">            for(Piece piece : contributionList) {</span>
+<span class="nc" id="L429">                this.fill(0xFFFFA466);</span>
+<span class="nc" id="L430">                this.rect(piece.tile.getX(), piece.tile.getY(), 48, 48);</span>
+<span class="nc" id="L431">                piece.draw(this);</span>
+<span class="nc" id="L432">            }</span>
+<span class="nc" id="L433">            return;</span>
+
+<span class="pc bpc" id="L435" title="2 of 4 branches missed.">        }else if (enemyCheckMate || ! board.playerKing.isAlive) {</span>
+<span class="nc" id="L436">            loseClip.start();</span>
+<span class="nc" id="L437">            gameOver = true;</span>
+<span class="nc" id="L438">            textFont(message,16);                  </span>
+<span class="nc" id="L439">            fill(255,0,0);                     </span>
+<span class="nc" id="L440">            text(&quot;You lost by &quot;,672,350);</span>
+<span class="nc" id="L441">            text(&quot;checkmate&quot;,672,370);</span>
+<span class="nc" id="L442">            text(&quot;Press r to restart&quot;,672,390);</span>
+<span class="nc" id="L443">            text(&quot;the game&quot;,672,410);</span>
+<span class="nc" id="L444">            ArrayList&lt;Piece&gt; contributionList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L445">            contributionList = board.playerKing.contributingCheck(board);</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">            for(Piece piece : contributionList) {</span>
+<span class="nc" id="L447">                this.fill(0xFFFFA466);</span>
+<span class="nc" id="L448">                this.rect(piece.tile.getX(), piece.tile.getY(), 48, 48);</span>
+<span class="nc" id="L449">                piece.draw(this);</span>
+<span class="nc" id="L450">            }</span>
+          
+<span class="nc" id="L452">            return;</span>
+        }
+<span class="fc bfc" id="L454" title="All 2 branches covered.">        if (gameOver) {</span>
+<span class="fc" id="L455">            textFont(message,16);                  </span>
+<span class="fc" id="L456">            fill(255,0,0);                     </span>
+<span class="fc" id="L457">            text(&quot;You resigned&quot;,672,360);</span>
+<span class="fc" id="L458">            text(&quot;Press r to restart&quot;,672,380);</span>
+<span class="fc" id="L459">            text(&quot;the game&quot;,672,400);</span>
+<span class="fc" id="L460">            return;</span>
+        }
+
+        
+  
+        
+   
+
+        //Initialize the board
+<span class="fc" id="L469">        board.initializeBoard(this);</span>
+        
+        //Setup the timer
+<span class="fc" id="L472">        int playerSeconds = playerTime % 60;</span>
+<span class="fc" id="L473">        int playerMinute = playerTime / 60;</span>
+        String displayPlayerTime;
+        String displayEnemyTime;
+<span class="fc bfc" id="L476" title="All 2 branches covered.">        if (playerSeconds &lt; 10) {</span>
+<span class="fc" id="L477">            displayPlayerTime = String.format(&quot;%d:0%s&quot;,playerMinute, playerSeconds);</span>
+        }else{
+<span class="fc" id="L479">            displayPlayerTime = String.format(&quot;%d:%s&quot;,playerMinute, playerSeconds);</span>
+        }
+<span class="fc" id="L481">        int enemySeconds = enemyTime % 60;</span>
+<span class="fc" id="L482">        int enemyMinute = enemyTime / 60;</span>
+<span class="fc bfc" id="L483" title="All 2 branches covered.">         if (enemySeconds &lt; 10) {</span>
+<span class="fc" id="L484">            displayEnemyTime = String.format(&quot;%d:0%s&quot;,enemyMinute, enemySeconds);</span>
+        }else{
+<span class="fc" id="L486">            displayEnemyTime = String.format(&quot;%d:%s&quot;,enemyMinute, enemySeconds);</span>
+        }
+        //Display the time
+<span class="fc" id="L489">        textFont(message,17);                  </span>
+<span class="fc" id="L490">        fill(255,255,255);   </span>
+<span class="fc" id="L491">        text(&quot;Player's time&quot;,680,550);</span>
+<span class="fc" id="L492">        text(&quot;CPU's time&quot;,680,50);</span>
+<span class="fc" id="L493">        textFont(message,40);      </span>
+<span class="fc" id="L494">        text(displayPlayerTime, 680, 600);</span>
+<span class="fc" id="L495">        text(displayEnemyTime, 680, 100);</span>
+        
+        //Check message
+<span class="pc bpc" id="L498" title="2 of 8 branches missed.">        if((enemyCheck || playerCheck) &amp;&amp; playerCheckMate != true &amp;&amp; enemyCheckMate != true){</span>
+<span class="fc" id="L499">            textFont(message,25);          </span>
+<span class="fc" id="L500">            fill(255,0,0);                     </span>
+<span class="fc" id="L501">            text(&quot;Check !&quot;,690,300);</span>
+            
+        }
+<span class="fc bfc" id="L504" title="All 2 branches covered.">        if(enemyCheck) {</span>
+            
+            
+<span class="fc bfc" id="L507" title="All 2 branches covered.">            if (mustDefineKing) {</span>
+                
+<span class="fc" id="L509">                textFont(message,14);          </span>
+<span class="fc" id="L510">                fill(255,0,0);                     </span>
+<span class="fc" id="L511">                text(&quot;You must defend&quot;,680,350);</span>
+<span class="fc" id="L512">                text(&quot;your king !&quot;,680,370);</span>
+                // If we still need to flash
+<span class="fc bfc" id="L514" title="All 2 branches covered.">                if (flashCount &lt; 3 * 2 * flashDuration) {</span>
+<span class="fc bfc" id="L515" title="All 2 branches covered.">                    if ((flashCount / flashDuration) % 2 == 0) {</span>
+                        // Flash: fill with red color
+<span class="fc" id="L517">                        fill(0xFFFF0000);</span>
+                    } else {
+                        // No flash: fill with black color
+<span class="fc" id="L520">                        fill(0);</span>
+                    }
+<span class="fc" id="L522">                    flashCount++;</span>
+                } else {
+                    // After 3 flashes, stop flashing and fill with red color
+<span class="fc" id="L525">                    fill(0xFFFF0000);</span>
+<span class="fc" id="L526">                    mustDefineKing = false;</span>
+<span class="fc" id="L527">                    flashCount = 0;</span>
+                }
+            } else {
+                // If we don't need to flash, just fill with red color
+<span class="fc" id="L531">                fill(0xFFFF0000);</span>
+            }
+            // Draw the rectangle
+<span class="fc" id="L534">            rect(board.playerKing.getX(), board.playerKing.getY(), 48, 48);</span>
+<span class="fc bfc" id="L535" title="All 2 branches covered.">        }else if (playerCheck) {</span>
+<span class="fc" id="L536">            fill(0xFFFF0000);</span>
+<span class="fc" id="L537">            rect(board.enemyKing.getX(),board.enemyKing.getY(),48,48);</span>
+            
+            
+        }
+
+   
+        // Decrease the time for player and enemy
+<span class="fc bfc" id="L544" title="All 2 branches covered.">        if (playerRound == true) {</span>
+<span class="fc" id="L545">            playerCounter++;</span>
+<span class="fc bfc" id="L546" title="All 2 branches covered.">            if(playerCounter == 60){</span>
+<span class="fc" id="L547">                playerTime --;</span>
+<span class="fc" id="L548">                playerCounter = 0;</span>
+            }
+                
+        }
+<span class="fc bfc" id="L552" title="All 2 branches covered.">        if (playerRound == false){</span>
+<span class="fc" id="L553">            enemyCounter++;</span>
+<span class="fc bfc" id="L554" title="All 2 branches covered.">            if(enemyCounter == 60){</span>
+<span class="fc" id="L555">                enemyTime --;</span>
+<span class="fc" id="L556">                enemyCounter = 0;</span>
+            }
+        }
+        
+       
+      
+<span class="pc bpc" id="L562" title="1 of 2 branches missed.">        if(test) {</span>
+<span class="nc" id="L563">            currentMovingPiece = board.aiMove2();</span>
+<span class="nc" id="L564">            playerPiece = currentMovingPiece;</span>
+<span class="nc" id="L565">            currentMovingPiece.targetTile(board);</span>
+<span class="nc bnc" id="L566" title="All 2 branches missed.">            if(currentMovingPiece.capturedTiles.size() != 0) {</span>
+<span class="nc" id="L567">                targetTile = currentMovingPiece.capturedTiles.get(rand.nextInt(currentMovingEnemy.capturedTiles.size()));</span>
+<span class="nc bnc" id="L568" title="All 2 branches missed.">            }else if (currentMovingEnemy.lsTile.size() != 0) {</span>
+<span class="nc" id="L569">                targetTile = currentMovingPiece.lsTile.get(rand.nextInt(currentMovingEnemy.lsTile.size()));</span>
+            }
+            
+            
+        }
+        //Player turn
+<span class="pc bpc" id="L575" title="1 of 4 branches missed.">        if (currentMovingPiece != null &amp;&amp; playerRound == true) {</span>
+            
+<span class="fc" id="L577">            playerPiece = currentMovingPiece;</span>
+           
+        
+            //Castling
+<span class="fc bfc" id="L581" title="All 4 branches covered.">            if(currentMovingPiece.tile.getColumn() + 2 &lt; 14 &amp;&amp; currentMovingPiece.tile.getColumn() -2 &gt;=0){</span>
+<span class="fc" id="L582">                if (targetTile == </span>
+<span class="pc bpc" id="L583" title="1 of 2 branches missed.">                board.boardMatrix[currentMovingPiece.tile.getRow()][currentMovingPiece.tile.getColumn() + 2]){</span>
+<span class="nc" id="L584">                rightCastle = true;</span>
+<span class="nc" id="L585">                rookCastleTile = board.boardMatrix[currentMovingPiece.tile.getRow()][currentMovingPiece.tile.getColumn() + 1];</span>
+<span class="fc" id="L586">            }else if(targetTile == </span>
+<span class="pc bpc" id="L587" title="1 of 2 branches missed.">                board.boardMatrix[currentMovingPiece.tile.getRow()][currentMovingPiece.tile.getColumn() - 2]){</span>
+<span class="nc" id="L588">                leftCastle = true;</span>
+<span class="nc" id="L589">                rookCastleTile = board.boardMatrix[currentMovingPiece.tile.getRow()][currentMovingPiece.tile.getColumn() - 1];</span>
+                }
+            }
+            //Eat sound effect 
+<span class="fc" id="L593">            boolean eat = false;</span>
+<span class="fc bfc" id="L594" title="All 2 branches covered.">            if (targetTile.getPiece() != null){</span>
+<span class="fc" id="L595">                eat = true;</span>
+            }
+<span class="fc" id="L597">            currentMovingPiece.tick(targetTile,this.board);</span>
+           
+<span class="fc bfc" id="L599" title="All 2 branches covered.">            if(currentMovingPiece.tile == targetTile) {</span>
+<span class="fc bfc" id="L600" title="All 2 branches covered.">                if (eat){</span>
+<span class="fc" id="L601">                    eatClip.setFramePosition(0);</span>
+<span class="fc" id="L602">                    eatClip.start();</span>
+                }else{
+<span class="fc" id="L604">                    goClip.setFramePosition(0);</span>
+<span class="fc" id="L605">                    goClip.start();</span>
+
+                }
+                
+                
+                //Castleing
+<span class="fc bfc" id="L611" title="All 2 branches covered.">                if(currentMovingPiece instanceof King) {</span>
+<span class="pc bpc" id="L612" title="3 of 4 branches missed.">                    if (rightCastle == true &amp;&amp; leftCastle == false) {</span>
+<span class="nc bnc" id="L613" title="All 2 branches missed.">                        while(currentMovingPiece.castlerookRight.tile != rookCastleTile){</span>
+<span class="nc" id="L614">                            currentMovingPiece.castlerookRight.tick(rookCastleTile,this.board);</span>
+                        }
+                        
+<span class="pc bpc" id="L617" title="2 of 4 branches missed.">                    }else if(rightCastle == false &amp;&amp; leftCastle == true){</span>
+<span class="nc bnc" id="L618" title="All 2 branches missed.">                        while(currentMovingPiece.castlerookLeft.tile != rookCastleTile){</span>
+<span class="nc" id="L619">                            currentMovingPiece.castlerookLeft.tick(rookCastleTile,this.board);</span>
+                        }
+                       
+                    }
+                }
+                //Check if the enemy King is under check
+<span class="fc" id="L625">                playerCheck = board.Checking(playerPiece);</span>
+<span class="fc bfc" id="L626" title="All 2 branches covered.">                if(enemyPiece != null) {</span>
+<span class="fc" id="L627">                    enemyCheck = board.Checking(enemyPiece);</span>
+                }
+<span class="fc" id="L629">                playerTime += playerIncrement;</span>
+<span class="fc" id="L630">                enemySelect = true;</span>
+<span class="fc" id="L631">                playerRound = false;</span>
+<span class="fc" id="L632">                currentMovingPiece = null;</span>
+<span class="fc" id="L633">                currentMovingEnemy = new Pawn(0,0,1,true,new Tile(0,0));</span>
+<span class="fc bfc" id="L634" title="All 2 branches covered.">                for(Piece piece : board.enemyCollection) {</span>
+<span class="fc" id="L635">                    piece.historyTiles.clear();</span>
+                    
+<span class="fc" id="L637">                }</span>
+            }
+        // Enemy turn
+<span class="pc bpc" id="L640" title="1 of 4 branches missed.">        }else if(playerRound == false &amp;&amp; currentMovingEnemy != null) {</span>
+<span class="fc bfc" id="L641" title="All 2 branches covered.">            if(enemySelect) {</span>
+<span class="fc" id="L642">                enemyTime += enemyIncrement;</span>
+<span class="fc" id="L643">                enemySelect = false;</span>
+<span class="fc bfc" id="L644" title="All 2 branches covered.">                if(playerCheck){</span>
+                    // Only move legally during check
+<span class="fc" id="L646">                    ArrayList&lt;Piece&gt; legalPiece = board.enemyLegalMove1(board.enemyKing, playerPiece);</span>
+<span class="fc" id="L647">                    ArrayList&lt;Tile&gt; legalTile = board.enemyLegalMove2(board.enemyKing, playerPiece);</span>
+<span class="fc" id="L648">                    board.enemyKing.targetTile(board);</span>
+                   
+<span class="pc bpc" id="L650" title="1 of 4 branches missed.">                    if(legalPiece.size() != 0 &amp;&amp; legalTile.size() != 0){</span>
+<span class="fc" id="L651">                        int index = rand.nextInt(legalPiece.size());</span>
+<span class="fc" id="L652">                        currentMovingEnemy = legalPiece.get(index);</span>
+<span class="fc" id="L653">                        enemyTargetTile = legalTile.get(index);</span>
+<span class="pc bpc" id="L654" title="1 of 2 branches missed.">                    }else if( board.enemyKing.lsTile.size() != 0) {</span>
+<span class="fc" id="L655">                        currentMovingEnemy = board.enemyKing;</span>
+<span class="fc" id="L656">                        enemyTargetTile = board.enemyKing.lsTile.get(rand.nextInt(board.enemyKing.lsTile.size()));</span>
+<span class="fc" id="L657">                        board.enemyKing.lsTile.clear();</span>
+<span class="fc" id="L658">                        board.enemyKing.capturedTiles.clear();</span>
+
+                    }else{
+<span class="nc" id="L661">                        playerCheckMate = true;</span>
+                    }
+                    
+<span class="fc" id="L664">                }else{</span>
+                    // if it is not in check, choose aiMove.
+<span class="fc" id="L666">                    currentMovingEnemy = board.aiMove();</span>
+<span class="fc" id="L667">                    enemyPiece = currentMovingEnemy;</span>
+<span class="fc" id="L668">                    currentMovingEnemy.targetTile(board);</span>
+<span class="fc bfc" id="L669" title="All 2 branches covered.">                    if(currentMovingEnemy.capturedTiles.size() != 0) {</span>
+<span class="fc" id="L670">                        enemyTargetTile = currentMovingEnemy.capturedTiles.get(rand.nextInt(currentMovingEnemy.capturedTiles.size()));</span>
+<span class="pc bpc" id="L671" title="1 of 2 branches missed.">                    }else if (currentMovingEnemy.lsTile.size() != 0) {</span>
+<span class="fc" id="L672">                        enemyTargetTile = currentMovingEnemy.lsTile.get(rand.nextInt(currentMovingEnemy.lsTile.size()));</span>
+                    }
+                }
+            }
+<span class="fc" id="L676">            currentMovingEnemy.tick(enemyTargetTile,this.board);</span>
+<span class="fc bfc" id="L677" title="All 2 branches covered.">            if(currentMovingEnemy.tile == enemyTargetTile) {</span>
+<span class="pc bpc" id="L678" title="3 of 6 branches missed.">                if(enemyTargetTile.getPiece() != null &amp;&amp; enemyTargetTile.getPiece().isWhite == ! currentMovingEnemy.isWhite){</span>
+                    
+<span class="nc" id="L680">                    enemyTargetTile.getPiece().isAlive = false;</span>
+                }
+                
+                //Check if the enemy King and player King is under check
+<span class="fc" id="L684">                enemyCheck = board.Checking(enemyPiece);</span>
+<span class="fc" id="L685">                playerCheck = board.Checking(playerPiece);</span>
+<span class="fc" id="L686">                playerRound = true;</span>
+<span class="fc" id="L687">                currentMovingEnemy.lsTile.clear();</span>
+<span class="fc" id="L688">                currentMovingEnemy.capturedTiles.clear();</span>
+<span class="fc" id="L689">                currentMovingEnemy = null;</span>
+<span class="fc bfc" id="L690" title="All 2 branches covered.">                for(Piece piece : board.playerCollection) {</span>
+<span class="fc" id="L691">                    piece.historyTiles.clear();</span>
+                    
+<span class="fc" id="L693">                }</span>
+        
+                
+            }
+
+        }
+        
+        
+       
+
+       
+<span class="fc" id="L704">        ArrayList&lt;Piece&gt; removedForPlayer = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L705">        ArrayList&lt;Piece&gt; removedForEnemy = new ArrayList&lt;&gt;();</span>
+         // Draw the enemy
+<span class="fc" id="L707">        int countj = board.enemyCollection.size();</span>
+<span class="fc bfc" id="L708" title="All 2 branches covered.">        for(int j = 0; j &lt; countj; j++) {</span>
+<span class="pc bpc" id="L709" title="1 of 2 branches missed.">            if(board.enemyCollection.get(j).isAlive == false) {</span>
+<span class="nc" id="L710">                removedForEnemy.add(board.enemyCollection.get(j));</span>
+            }
+            
+            
+<span class="fc" id="L714">            board.enemyCollection.get(j).check(this);</span>
+<span class="fc" id="L715">            board.enemyCollection.get(j).draw(this);</span>
+            
+        }
+        // Remove the dead enemy from collection
+<span class="fc" id="L719">        board.enemyCollection.removeAll(removedForEnemy);</span>
+
+        // Draw the player 
+<span class="fc" id="L722">        int counti = board.playerCollection.size();</span>
+<span class="fc bfc" id="L723" title="All 2 branches covered.">        for(int i = 0; i &lt; counti; i++) {</span>
+<span class="pc bpc" id="L724" title="1 of 2 branches missed.">            if(board.playerCollection.get(i).isAlive == false) {</span>
+<span class="nc" id="L725">                removedForPlayer.add(board.playerCollection.get(i));</span>
+            }
+         
+<span class="fc bfc" id="L728" title="All 4 branches covered.">            if(playerPiece != null &amp;&amp; playerPiece.capturedTiles.size() != 0) {</span>
+<span class="fc bfc" id="L729" title="All 2 branches covered.">                for(Tile tile : playerPiece.capturedTiles){</span>
+<span class="pc bpc" id="L730" title="2 of 4 branches missed.">                    if (tile.getPiece() != null &amp;&amp; tile.getPiece().isAlive == true) {</span>
+<span class="fc" id="L731">                        tile.getPiece().draw(this);</span>
+                    }
+<span class="fc" id="L733">                }</span>
+            }
+            
+<span class="fc" id="L736">            board.playerCollection.get(i).check(this);</span>
+<span class="fc" id="L737">            board.playerCollection.get(i).draw(this);</span>
+            
+            
+        }
+<span class="fc" id="L741">        board.playerCollection.removeAll(removedForPlayer);</span>
+
+<span class="fc bfc" id="L743" title="All 2 branches covered.">        for(Piece piece : board.enemyCollection){</span>
+<span class="fc" id="L744">            piece.draw(this);</span>
+            
+<span class="fc" id="L746">        }</span>
+
+        
+        // Pawn promote to queen 
+<span class="fc" id="L750">        board.pawnPromte(this, playerSpeed, maxMoveTime);</span>
+       
+       
+        
+ 
+
+        
+       
+<span class="fc" id="L758">    }</span>
+	
+	// Add any additional methods or attributes you want. Please put classes in different files.
+
+
+    public static void main(String[] args) {
+<span class="nc" id="L764">        PApplet.main(&quot;XXLChess.App&quot;);</span>
+        
+<span class="nc" id="L766">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

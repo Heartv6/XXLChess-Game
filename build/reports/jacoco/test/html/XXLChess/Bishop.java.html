@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Bishop.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">xxlchess</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">Bishop.java</span></div><h1>Bishop.java</h1><pre class="source lang-java linenums">package XXLChess;
+import processing.core.*;
+import java.util.*;
+
+/**
+ * The `Bishop` class represents a bishop chess piece in the XXLChess game.
+ * It extends the `Piece` class
+ */
+
+public class Bishop extends Piece{
+    /**
+     * Constructs a new `Bishop` object with the specified parameters.
+     *
+     * @param x         The x-coordinate of the piece on the board.
+     * @param y         The y-coordinate of the piece on the board.
+     * @param isPlayer  The player number (1 or -1) to which the Bishop belongs.
+     * @param isWhite   Indicates whether the piece is white (`true`) or black (`false`).
+     * @param tile      The tile on which the piece is placed.
+     */
+    public Bishop(int x, int y, int isPlayer, boolean isWhite, Tile tile) {
+<span class="fc" id="L21">        super(x, y, 3.625, isPlayer, isWhite, tile);</span>
+<span class="fc" id="L22">    }</span>
+
+    /**
+     * Sets the image of the bishop piece using the provided `PApplet` object.
+     *
+     * @param app The `PApplet` object used to load the image.
+     */
+    public void setImage(PApplet app) {
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (this.isWhite == true){</span>
+<span class="fc" id="L31">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/w-bishop.png&quot;);</span>
+<span class="fc" id="L32">            this.sprite.resize(48,48);</span>
+
+        }else{
+<span class="fc" id="L35">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/b-bishop.png&quot;);</span>
+<span class="fc" id="L36">            this.sprite.resize(48,48);</span>
+        }
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * Adds the target tiles that the bishop can move to and captures any opponent pieces on those tiles.
+     *
+     * @param board The `Board` object representing the game board.
+     */
+    public void addTargetTile(Board board) {
+        //Consider lefttop
+<span class="fc bfc" id="L47" title="All 4 branches covered.">        for(int i = this.tile.getRow() + 1, j = this.tile.getColumn() - 1; i &lt; 14 &amp;&amp; j &gt;= 0; i++, j--){</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">            if(board.boardMatrix[i][j].getPiece() == null) {</span>
+<span class="fc" id="L49">                lsTile.add(board.boardMatrix[i][j]);</span>
+            }else{
+<span class="fc bfc" id="L51" title="All 4 branches covered.">                if(board.boardMatrix[i][j].getPiece().isWhite == ! this.isWhite) {</span>
+<span class="fc" id="L52">                    lsTile.add(board.boardMatrix[i][j]);</span>
+<span class="fc" id="L53">                    capturedTiles.add(board.boardMatrix[i][j]);</span>
+<span class="fc bfc" id="L54" title="All 6 branches covered.">                    if(i &lt; 13 &amp;&amp; j &gt; 0 &amp;&amp; board.boardMatrix[i][j].getPiece() instanceof King){</span>
+<span class="fc" id="L55">                        specialTiles.add(board.boardMatrix[i + 1][j - 1]);</span>
+                    }
+                    break;
+                }else{
+<span class="fc bfc" id="L59" title="All 4 branches covered.">                    if(i &lt; 13 &amp;&amp; j &gt; 0){</span>
+<span class="fc" id="L60">                        specialTiles.add(board.boardMatrix[i + 1][j - 1]);</span>
+                    }
+                    break;
+                }
+
+            }
+        }
+
+        //Consider rightTop
+<span class="fc bfc" id="L69" title="All 4 branches covered.">        for(int i = this.tile.getRow() + 1, j = this.tile.getColumn() + 1; i &lt; 14 &amp;&amp; j &lt; 14; i++, j++){</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">            if(board.boardMatrix[i][j].getPiece() == null) {</span>
+<span class="fc" id="L71">                lsTile.add(board.boardMatrix[i][j]);</span>
+            }else{
+<span class="fc bfc" id="L73" title="All 4 branches covered.">                if(board.boardMatrix[i][j].getPiece().isWhite == ! this.isWhite) {</span>
+<span class="fc" id="L74">                    lsTile.add(board.boardMatrix[i][j]);</span>
+<span class="fc" id="L75">                    capturedTiles.add(board.boardMatrix[i][j]);</span>
+<span class="fc bfc" id="L76" title="All 6 branches covered.">                    if(i &lt; 13 &amp;&amp; j &lt; 13 &amp;&amp; board.boardMatrix[i][j].getPiece() instanceof King){</span>
+<span class="fc" id="L77">                        specialTiles.add(board.boardMatrix[i + 1][j + 1]);</span>
+                    }
+                    break;
+                }else{
+<span class="fc bfc" id="L81" title="All 4 branches covered.">                    if(i &lt; 13 &amp;&amp; j &lt; 13){</span>
+<span class="fc" id="L82">                        specialTiles.add(board.boardMatrix[i + 1][j + 1]);</span>
+                    }
+                    break;
+                }
+
+            }
+        }
+        
+        //Consider leftBottom
+<span class="fc bfc" id="L91" title="All 4 branches covered.">        for(int i = this.tile.getRow() - 1, j = this.tile.getColumn() - 1; i &gt;= 0 &amp;&amp; j &gt;= 0; i--, j--){</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            if(board.boardMatrix[i][j].getPiece() == null) {</span>
+<span class="fc" id="L93">                lsTile.add(board.boardMatrix[i][j]);</span>
+            }else{
+<span class="fc bfc" id="L95" title="All 4 branches covered.">                if(board.boardMatrix[i][j].getPiece().isWhite == ! this.isWhite) {</span>
+<span class="fc" id="L96">                    lsTile.add(board.boardMatrix[i][j]);</span>
+<span class="fc" id="L97">                    capturedTiles.add(board.boardMatrix[i][j]);</span>
+<span class="fc bfc" id="L98" title="All 6 branches covered.">                    if(i &gt; 0 &amp;&amp; j &gt; 0 &amp;&amp; board.boardMatrix[i][j].getPiece() instanceof King){</span>
+<span class="fc" id="L99">                        specialTiles.add(board.boardMatrix[i - 1][j - 1]);</span>
+                    }
+                    break;
+                }else{
+<span class="fc bfc" id="L103" title="All 4 branches covered.">                    if(i &gt; 0 &amp;&amp; j &gt; 0){</span>
+<span class="fc" id="L104">                        specialTiles.add(board.boardMatrix[i - 1][j - 1]);</span>
+                    }
+                    break;
+                }
+
+            }
+        }
+
+         //Consider rightBottom
+<span class="fc bfc" id="L113" title="All 4 branches covered.">         for(int i = this.tile.getRow() - 1, j = this.tile.getColumn() + 1; i &gt;= 0 &amp;&amp; j &lt; 14; i--, j++){</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">            if(board.boardMatrix[i][j].getPiece() == null) {</span>
+<span class="fc" id="L115">                lsTile.add(board.boardMatrix[i][j]);</span>
+            }else{
+<span class="fc bfc" id="L117" title="All 4 branches covered.">                if(board.boardMatrix[i][j].getPiece().isWhite == ! this.isWhite) {</span>
+<span class="fc" id="L118">                    lsTile.add(board.boardMatrix[i][j]);</span>
+<span class="fc" id="L119">                    capturedTiles.add(board.boardMatrix[i][j]);</span>
+<span class="pc bpc" id="L120" title="1 of 6 branches missed.">                    if(i &gt; 0 &amp;&amp; j &lt; 13 &amp;&amp; board.boardMatrix[i][j].getPiece() instanceof King){</span>
+<span class="nc" id="L121">                        specialTiles.add(board.boardMatrix[i - 1][j + 1]);</span>
+                    }
+                    break;
+                }else{
+<span class="fc bfc" id="L125" title="All 4 branches covered.">                    if(i &gt; 0 &amp;&amp; j &lt; 13){</span>
+<span class="fc" id="L126">                        specialTiles.add(board.boardMatrix[i - 1][j + 1]);</span>
+                    }
+                    break;
+                }
+
+            }
+        }
+
+
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Generates the target tiles for the Bishop.
+     *
+     * @param board  The game board object.
+     */
+    
+    public void targetTile(Board board) {
+<span class="fc" id="L144">        addTargetTile(board);</span>
+        
+<span class="fc" id="L146">    }</span>
+    /**
+     * Adds the target tiles that only considering leftTop and Bottomright
+     * Used for blocking
+     *
+     * @param board The `Board` object representing the game board.
+     */
+    public void leftTopbottomRight(Board board) {
+<span class="pc bpc" id="L154" title="1 of 4 branches missed.">        for(int i = this.tile.getRow() + 1, j = this.tile.getColumn() - 1; i &lt; 14 &amp;&amp; j &gt;= 0; i++, j--){</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">            if(board.boardMatrix[i][j].getPiece() == null) {</span>
+<span class="fc" id="L156">                lsTile.add(board.boardMatrix[i][j]);</span>
+            }else{
+<span class="pc bpc" id="L158" title="2 of 4 branches missed.">                if(board.boardMatrix[i][j].getPiece().isWhite == ! this.isWhite) {</span>
+<span class="fc" id="L159">                    lsTile.add(board.boardMatrix[i][j]);</span>
+<span class="fc" id="L160">                    capturedTiles.add(board.boardMatrix[i][j]);</span>
+<span class="pc bpc" id="L161" title="3 of 6 branches missed.">                    if(i &lt; 13 &amp;&amp; j &gt; 0 &amp;&amp; board.boardMatrix[i][j].getPiece() instanceof King){</span>
+<span class="nc" id="L162">                        specialTiles.add(board.boardMatrix[i + 1][j - 1]);</span>
+                    }
+                    break;
+                }else{
+<span class="nc bnc" id="L166" title="All 4 branches missed.">                    if(i &lt; 13 &amp;&amp; j &gt; 0){</span>
+<span class="nc" id="L167">                        specialTiles.add(board.boardMatrix[i + 1][j - 1]);</span>
+                    }
+                    break;
+                }
+
+            }
+        }
+<span class="pc bpc" id="L174" title="1 of 4 branches missed.">        for(int i = this.tile.getRow() - 1, j = this.tile.getColumn() + 1; i &gt;= 0 &amp;&amp; j &lt; 14; i--, j++){</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">            if(board.boardMatrix[i][j].getPiece() == null) {</span>
+<span class="fc" id="L176">                lsTile.add(board.boardMatrix[i][j]);</span>
+            }else{
+<span class="pc bpc" id="L178" title="2 of 4 branches missed.">                if(board.boardMatrix[i][j].getPiece().isWhite == ! this.isWhite) {</span>
+<span class="fc" id="L179">                    lsTile.add(board.boardMatrix[i][j]);</span>
+<span class="fc" id="L180">                    capturedTiles.add(board.boardMatrix[i][j]);</span>
+<span class="pc bpc" id="L181" title="3 of 6 branches missed.">                    if(i &gt; 0 &amp;&amp; j &lt; 13 &amp;&amp; board.boardMatrix[i][j].getPiece() instanceof King){</span>
+<span class="nc" id="L182">                        specialTiles.add(board.boardMatrix[i - 1][j + 1]);</span>
+                    }
+                    break;
+                }else{
+<span class="nc bnc" id="L186" title="All 4 branches missed.">                    if(i &gt; 0 &amp;&amp; j &lt; 13){</span>
+<span class="nc" id="L187">                        specialTiles.add(board.boardMatrix[i - 1][j + 1]);</span>
+                    }
+                    break;
+                }
+
+            }
+        }
+<span class="fc" id="L194">    }</span>
+    /**
+     * Adds the target tiles that only considering leftBottom and Topright
+     * Used for blocking
+     *
+     * @param board The `Board` object representing the game board.
+     */
+    public void leftBottomTopRight(Board board) {
+<span class="fc bfc" id="L202" title="All 4 branches covered.">        for(int i = this.tile.getRow() - 1, j = this.tile.getColumn() - 1; i &gt;= 0 &amp;&amp; j &gt;= 0; i--, j--){</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">            if(board.boardMatrix[i][j].getPiece() == null) {</span>
+<span class="fc" id="L204">                lsTile.add(board.boardMatrix[i][j]);</span>
+            }else{
+<span class="pc bpc" id="L206" title="1 of 4 branches missed.">                if(board.boardMatrix[i][j].getPiece().isWhite == ! this.isWhite) {</span>
+<span class="fc" id="L207">                    lsTile.add(board.boardMatrix[i][j]);</span>
+<span class="fc" id="L208">                    capturedTiles.add(board.boardMatrix[i][j]);</span>
+<span class="pc bpc" id="L209" title="2 of 6 branches missed.">                    if(i &gt; 0 &amp;&amp; j &gt; 0 &amp;&amp; board.boardMatrix[i][j].getPiece() instanceof King){</span>
+<span class="nc" id="L210">                        specialTiles.add(board.boardMatrix[i - 1][j - 1]);</span>
+                    }
+                    break;
+                }else{
+<span class="pc bpc" id="L214" title="2 of 4 branches missed.">                    if(i &gt; 0 &amp;&amp; j &gt; 0){</span>
+<span class="fc" id="L215">                        specialTiles.add(board.boardMatrix[i - 1][j - 1]);</span>
+                    }
+                    break;
+                }
+
+            }
+        }
+
+<span class="fc bfc" id="L223" title="All 4 branches covered.">        for(int i = this.tile.getRow() + 1, j = this.tile.getColumn() + 1; i &lt; 14 &amp;&amp; j &lt; 14; i++, j++){</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">            if(board.boardMatrix[i][j].getPiece() == null) {</span>
+<span class="fc" id="L225">                lsTile.add(board.boardMatrix[i][j]);</span>
+            }else{
+<span class="pc bpc" id="L227" title="1 of 4 branches missed.">                if(board.boardMatrix[i][j].getPiece().isWhite == ! this.isWhite) {</span>
+<span class="fc" id="L228">                    lsTile.add(board.boardMatrix[i][j]);</span>
+<span class="fc" id="L229">                    capturedTiles.add(board.boardMatrix[i][j]);</span>
+<span class="pc bpc" id="L230" title="3 of 6 branches missed.">                    if(i &lt; 13 &amp;&amp; j &lt; 13 &amp;&amp; board.boardMatrix[i][j].getPiece() instanceof King){</span>
+<span class="nc" id="L231">                        specialTiles.add(board.boardMatrix[i + 1][j + 1]);</span>
+                    }
+                    break;
+                }else{
+<span class="nc bnc" id="L235" title="All 4 branches missed.">                    if(i &lt; 13 &amp;&amp; j &lt; 13){</span>
+<span class="nc" id="L236">                        specialTiles.add(board.boardMatrix[i + 1][j + 1]);</span>
+                    }
+                    break;
+                }
+
+            }
+        }
+<span class="fc" id="L243">    }</span>
+
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

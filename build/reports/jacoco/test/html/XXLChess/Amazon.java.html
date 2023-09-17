@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Amazon.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">xxlchess</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">Amazon.java</span></div><h1>Amazon.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+import processing.core.*;
+import java.util.*;
+
+/**
+ * The `Amazon` class represents an amazon chess piece in the XXLChess game.
+ * It extends the `Bishop` class and implements the `KnightMove` and `RookMove` interfaces.
+ * The amazon combines the movement capabilities of both a bishop and a rook.
+ */
+
+public class Amazon extends Bishop implements KnightMove, RookMove{
+    /**
+     * Constructs a new `Amazon` object with the specified parameters.
+     *
+     * @param x         The x-coordinate of the piece on the board.
+     * @param y         The y-coordinate of the piece on the board.
+     * @param isPlayer  The player number (1 or -1) to which the piece belongs.
+     * @param isWhite   Indicates whether the piece is white (`true`) or black (`false`).
+     * @param tile      The tile on which the piece is placed.
+     */
+    public Amazon(int x, int y, int isPlayer, boolean isWhite, Tile tile) {
+<span class="fc" id="L23">        super(x, y, isPlayer, isWhite, tile);</span>
+<span class="fc" id="L24">        this.value = 12;</span>
+        
+<span class="fc" id="L26">    }</span>
+
+
+    /**
+     * Sets the image of the amazon piece using the provided `PApplet` object.
+     *
+     * @param app The `PApplet` object used to load the image.
+     */
+    public void setImage(PApplet app) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (this.isWhite == true){</span>
+<span class="fc" id="L36">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/w-amazon.png&quot;);</span>
+<span class="fc" id="L37">            this.sprite.resize(48,48);</span>
+
+        }else{
+<span class="fc" id="L40">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/b-amazon.png&quot;);</span>
+<span class="fc" id="L41">            this.sprite.resize(48,48);</span>
+        }
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Adds the target tiles that the amazon can move to and captures any opponent pieces on those tiles.
+     * The amazon can move like a bishop, a rook, and also has knight-like movement.
+     *
+     * @param board The `Board` object representing the game board.
+     */
+    public void targetTile(Board board){
+<span class="fc" id="L52">            knightAddTiles(board, this.tile, this.lsTile, this.capturedTiles, this.isWhite);</span>
+<span class="fc" id="L53">            rookAddTiles(board, this.tile, this.lsTile, this.capturedTiles, this.isWhite, specialTiles);</span>
+<span class="fc" id="L54">            addTargetTile(board);</span>
+
+<span class="fc" id="L56">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

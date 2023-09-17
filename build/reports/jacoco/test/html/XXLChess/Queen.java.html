@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Queen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">xxlchess</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">Queen.java</span></div><h1>Queen.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+import processing.core.*;
+import java.util.*;
+/**
+ * The `Queen` class represents a queen piece in a chess game.
+ * It extends the `Bishop` class and implements the `RookMove` interface.
+ */
+
+public class Queen extends Bishop implements RookMove{
+    
+    /**
+     * Constructs a `Queen` object with the specified coordinates, player, color, and initial tile.
+     *
+     * @param x       The x-coordinate of the queen on the chessboard.
+     * @param y       The y-coordinate of the queen on the chessboard.
+     * @param isPlayer An integer indicating the player to which the queen belongs.
+     * @param isWhite A boolean indicating whether the queen is white or black.
+     * @param tile    The initial tile occupied by the queen.
+     */
+    public Queen(int x, int y, int isPlayer, boolean isWhite, Tile tile) {
+<span class="fc" id="L22">        super(x, y, isPlayer, isWhite, tile);</span>
+<span class="fc" id="L23">        this.value = 9.5;</span>
+        
+<span class="fc" id="L25">    }</span>
+
+     /**
+     * Loads and sets the image for the queen based on its color.
+     *
+     * @param app The PApplet object for rendering.
+     */
+
+    public void setImage(PApplet app) {
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (this.isWhite == true){</span>
+<span class="fc" id="L35">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/w-queen.png&quot;);</span>
+<span class="fc" id="L36">            this.sprite.resize(48,48);</span>
+
+        }else{
+<span class="fc" id="L39">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/b-queen.png&quot;);</span>
+<span class="fc" id="L40">            this.sprite.resize(48,48);</span>
+        }
+<span class="fc" id="L42">    }</span>
+    /**
+     * Determines the valid target tiles for the queen based on its movement rules(Bishop + Rook).
+     * Adds the valid tiles to the `lsTile` ArrayList.
+     *
+     * @param board The chessboard containing the tiles.
+     */
+    public void targetTile(Board board) {
+<span class="fc" id="L50">        rookAddTiles(board, this.tile, this.lsTile, this.capturedTiles,this.isWhite,specialTiles);</span>
+<span class="fc" id="L51">        addTargetTile(board);</span>
+        
+<span class="fc" id="L53">    }</span>
+
+    
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

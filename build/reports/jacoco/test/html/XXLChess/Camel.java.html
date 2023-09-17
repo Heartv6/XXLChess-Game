@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Camel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">xxlchess</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">Camel.java</span></div><h1>Camel.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+import processing.core.*;
+import java.util.*;
+
+/**
+ * The `Camel` class represents a camel piece in XXLChess game.
+ * It extends the Piece class.
+ * The Camel can move in a specific pattern and capture enemy pieces.
+ */
+
+public class Camel extends Piece{
+     /**
+     * Constructs a new Camel object with the specified parameters.
+     *
+     * @param x         The x-coordinate of the Camel's position.
+     * @param y         The y-coordinate of the Camel's position.
+     * @param isPlayer  The player number (1 or -1) to which the Camel belongs.
+     * @param isWhite   Indicates whether the Camel is white or not.
+     * @param tile      The tile on which the Camel is placed.
+     */
+
+    public Camel(int x, int y, int isPlayer, boolean isWhite, Tile tile) {
+<span class="fc" id="L24">        super(x, y, 3, isPlayer, isWhite, tile);</span>
+        
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * Sets the image of the amazon piece using the provided `PApplet` object.
+     *
+     * @param app The `PApplet` object used to load the image.
+     */
+
+    public void setImage(PApplet app) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (this.isWhite == true){</span>
+<span class="fc" id="L36">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/w-camel.png&quot;);</span>
+<span class="fc" id="L37">            this.sprite.resize(48,48);</span>
+
+        }else{
+<span class="fc" id="L40">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/b-camel.png&quot;);</span>
+<span class="fc" id="L41">            this.sprite.resize(48,48);</span>
+        }
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Adds target tiles to the possible move list based on the Camel's movement rules.
+     *
+     * @param board  The game board object.
+     */
+    public void addTargetTile(Board board) {
+        // Check and add target tiles based on specific conditions
+<span class="fc bfc" id="L52" title="All 4 branches covered.">        if (tile.getRow() - 1 &gt;= 0 &amp;&amp; tile.getColumn() + 3 &lt; 14 &amp;&amp;</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            (board.boardMatrix[tile.getRow() - 1][tile.getColumn() + 3].getPiece() == null ||</span>
+<span class="fc bfc" id="L54" title="All 4 branches covered.">            board.boardMatrix[tile.getRow() - 1][tile.getColumn() + 3].getPiece().isWhite == !isWhite)){</span>
+<span class="fc" id="L55">            lsTile.add(board.boardMatrix[tile.getRow() - 1][tile.getColumn() + 3]);</span>
+        }
+<span class="fc bfc" id="L57" title="All 4 branches covered.">        if (tile.getRow() - 1 &gt;= 0 &amp;&amp; tile.getColumn() - 3 &gt;= 0 &amp;&amp;</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">            (board.boardMatrix[tile.getRow() - 1][tile.getColumn() - 3].getPiece() == null ||</span>
+<span class="fc bfc" id="L59" title="All 4 branches covered.">            board.boardMatrix[tile.getRow() - 1][tile.getColumn() - 3].getPiece().isWhite == !isWhite)) {</span>
+<span class="fc" id="L60">            lsTile.add(board.boardMatrix[tile.getRow() - 1][tile.getColumn() - 3]);</span>
+        }
+<span class="fc bfc" id="L62" title="All 4 branches covered.">        if (tile.getRow() + 1 &lt; 14 &amp;&amp; tile.getColumn() + 3 &lt; 14 &amp;&amp;</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            (board.boardMatrix[tile.getRow() + 1][tile.getColumn() + 3].getPiece() == null ||</span>
+<span class="fc bfc" id="L64" title="All 4 branches covered.">            board.boardMatrix[tile.getRow() + 1][tile.getColumn() + 3].getPiece().isWhite == !isWhite)){</span>
+<span class="fc" id="L65">            lsTile.add(board.boardMatrix[tile.getRow() + 1][tile.getColumn() + 3]);;</span>
+        }
+<span class="fc bfc" id="L67" title="All 4 branches covered.">        if (tile.getRow() + 1 &lt; 14 &amp;&amp; tile.getColumn() - 3 &gt;= 0 &amp;&amp;</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">            (board.boardMatrix[tile.getRow() + 1][tile.getColumn() - 3].getPiece() == null ||</span>
+<span class="fc bfc" id="L69" title="All 4 branches covered.">            board.boardMatrix[tile.getRow() + 1][tile.getColumn() - 3].getPiece().isWhite == !isWhite)){</span>
+<span class="fc" id="L70">            lsTile.add(board.boardMatrix[tile.getRow() + 1][tile.getColumn() - 3]);</span>
+        }
+<span class="fc bfc" id="L72" title="All 4 branches covered.">        if (tile.getRow() + 3 &lt; 14 &amp;&amp; tile.getColumn() - 1 &gt;= 0 &amp;&amp;</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            (board.boardMatrix[tile.getRow() + 3][tile.getColumn() - 1].getPiece() == null ||</span>
+<span class="pc bpc" id="L74" title="1 of 4 branches missed.">            board.boardMatrix[tile.getRow() + 3][tile.getColumn() - 1].getPiece().isWhite == !isWhite)){</span>
+<span class="fc" id="L75">            lsTile.add(board.boardMatrix[tile.getRow() + 3][tile.getColumn() - 1]);</span>
+        }
+<span class="pc bpc" id="L77" title="1 of 4 branches missed.">        if (tile.getRow() + 3 &lt; 14 &amp;&amp; tile.getColumn() + 1 &lt; 14 &amp;&amp;</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            (board.boardMatrix[tile.getRow() + 3][tile.getColumn() + 1].getPiece() == null ||</span>
+<span class="fc bfc" id="L79" title="All 4 branches covered.">            board.boardMatrix[tile.getRow() + 3][tile.getColumn() + 1].getPiece().isWhite == !isWhite)){</span>
+<span class="fc" id="L80">            lsTile.add(board.boardMatrix[tile.getRow() + 3][tile.getColumn() + 1]);</span>
+        }
+<span class="pc bpc" id="L82" title="1 of 4 branches missed.">        if (tile.getRow() - 3 &gt;= 0 &amp;&amp; tile.getColumn() + 1 &lt; 14 &amp;&amp;</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            (board.boardMatrix[tile.getRow() - 3][tile.getColumn() + 1].getPiece() == null ||</span>
+<span class="fc bfc" id="L84" title="All 4 branches covered.">            board.boardMatrix[tile.getRow() - 3][tile.getColumn() + 1].getPiece().isWhite == !isWhite)){</span>
+<span class="fc" id="L85">            lsTile.add(board.boardMatrix[tile.getRow() - 3][tile.getColumn() + 1]);</span>
+        }
+<span class="fc bfc" id="L87" title="All 4 branches covered.">        if (tile.getRow() - 3 &gt;= 0 &amp;&amp; tile.getColumn() - 1 &gt;= 0 &amp;&amp;</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            (board.boardMatrix[tile.getRow() - 3][tile.getColumn() - 1].getPiece() == null ||</span>
+<span class="fc bfc" id="L89" title="All 4 branches covered.">            board.boardMatrix[tile.getRow() - 3][tile.getColumn() - 1].getPiece().isWhite == !isWhite)){</span>
+<span class="fc" id="L90">            lsTile.add(board.boardMatrix[tile.getRow() - 3][tile.getColumn() - 1]);</span>
+        }
+
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        for(Tile tile1 : lsTile) {</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (tile1.getPiece() != null) {</span>
+<span class="fc bfc" id="L95" title="All 4 branches covered.">                if(tile1.getPiece().isWhite == ! isWhite){</span>
+<span class="fc" id="L96">                    capturedTiles.add(tile1);</span>
+                }
+            }
+<span class="fc" id="L99">        }</span>
+
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Generates the target tiles for the Camel.
+     *
+     * @param board  The game board object.
+     */
+    public void targetTile(Board board) {
+<span class="fc" id="L109">        addTargetTile(board);</span>
+        
+<span class="fc" id="L111">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

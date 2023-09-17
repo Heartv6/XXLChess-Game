@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RookMove.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">xxlchess</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">RookMove.java</span></div><h1>RookMove.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+import processing.core.*;
+import java.util.*;
+
+/**
+ * The `RookMove` interface defines the behavior for rook movement in a chess game.
+ * It provides a default method `rookAddTiles` to add the valid tiles that a rook can move to.
+ */
+
+public interface RookMove {
+     /**
+     * Adds the valid tiles that a rook can move to, based on the current state of the board.
+     * The valid tiles are added to the specified `lsTile` ArrayList.
+     * If there are any captured pieces during the movement, they are added to the `capturedTiles` ArrayList.
+     * If any special tiles need to be considered, such as when a king is exposed to check,
+     * they are added to the `specialTiles` ArrayList.
+     *
+     * @param board         The chessboard containing the tiles.
+     * @param tile          The current tile representing the rook's position.
+     * @param lsTile        The ArrayList to store the valid tiles that the rook can move to.
+     * @param capturedTiles The ArrayList to store any captured pieces during the movement.
+     * @param isWhite       A boolean indicating whether the rook belongs to the white player.
+     * @param specialTiles  The ArrayList to store any special tiles that need to be considered.
+     */
+    public default void rookAddTiles(Board board,Tile tile, ArrayList&lt;Tile&gt; lsTile, ArrayList&lt;Tile&gt; capturedTiles, boolean isWhite
+    ,ArrayList&lt;Tile&gt; specialTiles){
+        //Consider rightpart
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        for(int i = tile.getColumn() + 1; i &lt; 14; i++){</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">            if (board.boardMatrix[tile.getRow()][i].getPiece() == null) {</span>
+<span class="fc" id="L31">                lsTile.add(board.boardMatrix[tile.getRow()][i]);</span>
+            }else{
+<span class="fc bfc" id="L33" title="All 4 branches covered.">                if(board.boardMatrix[tile.getRow()][i].getPiece().isWhite == ! isWhite){</span>
+<span class="fc" id="L34">                    capturedTiles.add(board.boardMatrix[tile.getRow()][i]);</span>
+<span class="fc" id="L35">                    lsTile.add(board.boardMatrix[tile.getRow()][i]);</span>
+<span class="fc bfc" id="L36" title="All 4 branches covered.">                    if(i &lt; 13 &amp;&amp; board.boardMatrix[tile.getRow()][i].getPiece() instanceof King){</span>
+<span class="fc" id="L37">                        specialTiles.add(board.boardMatrix[tile.getRow()][i+1]);</span>
+                    }
+                    break;
+                    
+                }else{
+<span class="fc bfc" id="L42" title="All 2 branches covered.">                    if(i &lt; 13){</span>
+<span class="fc" id="L43">                        specialTiles.add(board.boardMatrix[tile.getRow()][i+1]);</span>
+                    }
+                    break;
+                }
+            }
+        }
+        //Consider leftpart 
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        for(int i = tile.getColumn() - 1; i &gt;= 0; i--){</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">            if (board.boardMatrix[tile.getRow()][i].getPiece() == null) {</span>
+<span class="fc" id="L52">                lsTile.add(board.boardMatrix[tile.getRow()][i]);</span>
+            }else{
+<span class="fc bfc" id="L54" title="All 4 branches covered.">                if(board.boardMatrix[tile.getRow()][i].getPiece().isWhite == ! isWhite){</span>
+<span class="fc" id="L55">                    capturedTiles.add(board.boardMatrix[tile.getRow()][i]);</span>
+<span class="fc" id="L56">                    lsTile.add(board.boardMatrix[tile.getRow()][i]);</span>
+<span class="fc bfc" id="L57" title="All 4 branches covered.">                    if(i &gt; 0 &amp;&amp; board.boardMatrix[tile.getRow()][i].getPiece() instanceof King){</span>
+<span class="fc" id="L58">                        specialTiles.add(board.boardMatrix[tile.getRow()][i-1]);</span>
+                    }
+                    break;
+                }else{
+<span class="fc bfc" id="L62" title="All 2 branches covered.">                    if(i &gt; 0){</span>
+<span class="fc" id="L63">                        specialTiles.add(board.boardMatrix[tile.getRow()][i-1]);</span>
+                    }
+                    
+                    break;
+                }
+            }
+        }
+
+        //Consider toppart
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        for(int i = tile.getRow() + 1; i &lt; 14; i++){</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            if (board.boardMatrix[i][tile.getColumn()].getPiece() == null) {</span>
+<span class="fc" id="L74">                lsTile.add(board.boardMatrix[i][tile.getColumn()]);</span>
+            }else{
+<span class="fc bfc" id="L76" title="All 4 branches covered.">                if(board.boardMatrix[i][tile.getColumn()].getPiece().isWhite == ! isWhite){</span>
+<span class="fc" id="L77">                    capturedTiles.add(board.boardMatrix[i][tile.getColumn()]);</span>
+<span class="fc" id="L78">                    lsTile.add(board.boardMatrix[i][tile.getColumn()]);</span>
+<span class="pc bpc" id="L79" title="1 of 4 branches missed.">                    if(i &lt; 13 &amp;&amp; board.boardMatrix[i][tile.getColumn()].getPiece() instanceof King){</span>
+<span class="nc" id="L80">                        specialTiles.add(board.boardMatrix[i+1][tile.getColumn()]);</span>
+                    }
+                    
+                    break;
+                }else{
+<span class="fc bfc" id="L85" title="All 2 branches covered.">                    if(i &lt; 13){</span>
+<span class="fc" id="L86">                        specialTiles.add(board.boardMatrix[i+1][tile.getColumn()]);</span>
+                    }
+                    break;
+                }
+            }
+        }
+
+        //Consider bottompart 
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for(int i = tile.getRow() - 1; i &gt;= 0; i--){</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">            if (board.boardMatrix[i][tile.getColumn()].getPiece() == null) {</span>
+<span class="fc" id="L96">                lsTile.add(board.boardMatrix[i][tile.getColumn()]);</span>
+            }else{
+<span class="fc bfc" id="L98" title="All 4 branches covered.">                if(board.boardMatrix[i][tile.getColumn()].getPiece().isWhite == ! isWhite){</span>
+<span class="fc" id="L99">                    capturedTiles.add(board.boardMatrix[i][tile.getColumn()]);</span>
+<span class="fc" id="L100">                    lsTile.add(board.boardMatrix[i][tile.getColumn()]);</span>
+<span class="pc bpc" id="L101" title="1 of 4 branches missed.">                    if(i &gt; 0 &amp;&amp; board.boardMatrix[i][tile.getColumn()].getPiece() instanceof King){</span>
+<span class="nc" id="L102">                        specialTiles.add(board.boardMatrix[i-1][tile.getColumn()]);</span>
+                    }
+                    break;
+                }else{
+<span class="fc bfc" id="L106" title="All 2 branches covered.">                    if (i &gt; 0){</span>
+<span class="fc" id="L107">                        specialTiles.add(board.boardMatrix[i-1][tile.getColumn()]);</span>
+                    }
+                    break;
+                }
+            }
+        }
+
+<span class="fc" id="L114">    }</span>
+
+    
+    
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

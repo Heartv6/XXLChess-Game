@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>King.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">xxlchess</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">King.java</span></div><h1>King.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+import processing.core.*;
+import java.util.*;
+
+/**
+ * The `King` class represents a king piece in the XXLChess game.
+ * It extends Piece
+ */
+
+public class King extends Piece{
+    // LeftCastle
+<span class="fc" id="L13">    public boolean castleLeft = false;</span>
+    // RightCastle
+<span class="fc" id="L15">    public boolean castleRight = false;</span>
+<span class="fc" id="L16">    public ArrayList&lt;Tile&gt; possibleTiles = new ArrayList&lt;&gt;();</span>
+
+    /**
+     * Constructs a new King object.
+     *
+     * @param x         The x-coordinate of the king on the game board.
+     * @param y         The y-coordinate of the king on the game board.
+     * @param isPlayer  The player number (1 or -1) to which the king belongs.
+     * @param isWhite   Indicates whether the king is white (true) or black (false).
+     * @param tile      The initial tile of the king.
+     */
+    public King(int x, int y, int isPlayer, boolean isWhite, Tile tile) {
+<span class="fc" id="L28">        super(x, y, Double.POSITIVE_INFINITY, isPlayer, isWhite, tile);</span>
+        
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Loads and sets the image of the king.
+     *
+     * @param app  The PApplet instance for rendering.
+     */
+    public void setImage(PApplet app) {
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (this.isWhite == true){</span>
+<span class="fc" id="L39">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/w-king.png&quot;);</span>
+<span class="fc" id="L40">            this.sprite.resize(48,48);</span>
+
+        }else{
+<span class="fc" id="L43">            this.sprite = app.loadImage(&quot;src/main/resources/XXLChess/b-king.png&quot;);</span>
+<span class="fc" id="L44">            this.sprite.resize(48,48);</span>
+        }
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Adds the target tiles that the king can move to and updates the lists of target tiles and captured tiles.
+     * The king can not move to the place that is in danger 
+     * @param board  The game board.
+     */
+    public void addTargetTile(Board board) {
+        // Add all the positions 
+<span class="fc" id="L55">        int[][] directions = {{1, -1}, {1, 0}, {1, 1}, {0, 1}, {0, -1}, {-1, 1}, {-1, 0}, {-1, -1}};</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (int[] direction : directions) {</span>
+<span class="fc" id="L57">            int newRow = tile.getRow() + direction[0];</span>
+<span class="fc" id="L58">            int newColumn = tile.getColumn() + direction[1];</span>
+<span class="pc bpc" id="L59" title="2 of 8 branches missed.">            if (newRow &gt;= 0 &amp;&amp; newRow &lt; 14 &amp;&amp; newColumn &gt;= 0 &amp;&amp; newColumn &lt; 14) {</span>
+<span class="fc" id="L60">                Tile newTile = board.boardMatrix[newRow][newColumn];</span>
+                
+<span class="fc bfc" id="L62" title="All 2 branches covered.">                if (newTile.getPiece() == null) {</span>
+                    // If there is no piece on that tile, add it to the lsTile
+<span class="fc" id="L64">                    lsTile.add(newTile);</span>
+<span class="fc" id="L65">                    possibleTiles.add(newTile);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">                } else if (newTile.getPiece().isWhite != this.isWhite) {</span>
+                    // If there is a piece that color is different between this piece
+                    // Add it to the capture tiles
+<span class="fc" id="L69">                    lsTile.add(newTile);</span>
+<span class="fc" id="L70">                    capturedTiles.add(newTile);</span>
+<span class="fc" id="L71">                    possibleTiles.add(newTile);</span>
+                }
+            }
+        }
+        //Castleing
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (this.moved == false) {</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">            for(int i = tile.getColumn() + 1; i &lt; 14; i++){</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">                if (board.boardMatrix[this.tile.getRow()][i].getPiece() == null) {</span>
+                    ;
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">                }else if(board.boardMatrix[this.tile.getRow()][i].getPiece() instanceof Rook &amp;&amp;</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                        board.boardMatrix[this.tile.getRow()][i].getPiece().isWhite == this.isWhite &amp;&amp;</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">                        board.boardMatrix[this.tile.getRow()][i].getPiece().moved == false) {</span>
+<span class="nc" id="L83">                    lsTile.add(board.boardMatrix[this.tile.getRow()][this.tile.getColumn()+ 2]);</span>
+<span class="nc" id="L84">                    castlerookRight = board.boardMatrix[this.tile.getRow()][i].getPiece();</span>
+                    
+
+                }else{
+                    break;
+                }
+                
+            }
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">            for(int i = tile.getColumn() - 1; i &gt;= 0; i--){</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">                if (board.boardMatrix[this.tile.getRow()][i].getPiece() == null) {</span>
+                    ;
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">                }else if(board.boardMatrix[this.tile.getRow()][i].getPiece() instanceof Rook &amp;&amp;</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                        board.boardMatrix[this.tile.getRow()][i].getPiece().isWhite == this.isWhite &amp;&amp;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                        board.boardMatrix[this.tile.getRow()][i].getPiece().moved == false) {</span>
+<span class="nc" id="L98">                    lsTile.add(board.boardMatrix[this.tile.getRow()][this.tile.getColumn()- 2]);</span>
+<span class="nc" id="L99">                    castlerookLeft = board.boardMatrix[this.tile.getRow()][i].getPiece();</span>
+                    
+                    
+                }else{
+                    break;
+                }
+                
+            }
+        }
+        
+        // Checking for king not moving to danger
+<span class="fc" id="L110">        int count = lsTile.size();</span>
+<span class="fc" id="L111">        ArrayList&lt;Tile&gt; removedForPlayer = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L112">        ArrayList&lt;Tile&gt; removedForEnemy = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L113">        this.addPossibleTiles(board);</span>
+        // Check if that tile is currently one of the all possibleTiles in enemy/player collection
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        for(int i = 0; i &lt; count; i++) {</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">             if(isPlayer == 1){</span>
+<span class="fc bfc" id="L117" title="All 4 branches covered.">                if (board.allEnemyTile.contains(lsTile.get(i)) || board.specialEnemyTile.contains(lsTile.get(i))){</span>
+<span class="fc" id="L118">                   removedForPlayer.add(lsTile.get(i));</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">                }else if(board.enemyKing.possibleTiles.contains(lsTile.get(i))) {</span>
+<span class="fc" id="L120">                    removedForPlayer.add(lsTile.get(i));</span>
+                }
+             
+            }else{
+<span class="fc bfc" id="L124" title="All 4 branches covered.">                if (board.allPlayerTile.contains(lsTile.get(i)) || board.specialPlayerTile.contains(lsTile.get(i))){</span>
+<span class="fc" id="L125">                    removedForEnemy.add(lsTile.get(i));</span>
+                    
+<span class="fc bfc" id="L127" title="All 2 branches covered.">                }else if(board.playerKing.possibleTiles.contains(lsTile.get(i))) {</span>
+<span class="fc" id="L128">                    removedForEnemy.add(lsTile.get(i));</span>
+                }
+                
+            }
+           
+        }
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        if(isPlayer == 1){</span>
+<span class="fc" id="L135">            lsTile.removeAll(removedForPlayer); </span>
+        
+        }else{
+<span class="fc" id="L138">            lsTile.removeAll(removedForEnemy);</span>
+        
+        }
+       
+        
+        
+
+        
+<span class="fc" id="L146">    }</span>
+
+    /**
+     * Returns a list of pieces that are contributing to a check on the king.
+     *
+     * @param board  The game board.
+     * @return       The list of pieces contributing to a check on the king.
+     */
+
+    public ArrayList&lt;Piece&gt; contributingCheck(Board board) {
+<span class="nc" id="L156">        ArrayList&lt;Piece&gt; contributePiece = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L157">        this.addPossibleTiles(board);</span>
+<span class="nc" id="L158">        possibleTiles.add(this.tile);</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        if(this.isPlayer == 1){</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">            for(Piece piece : board.enemyCollection){</span>
+<span class="nc" id="L161">                Piece simPiece = (Piece) piece.clone();</span>
+<span class="nc" id="L162">                simPiece.targetTile(board);</span>
+<span class="nc" id="L163">                simPiece.lsTile.retainAll(possibleTiles);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">                if(simPiece.lsTile.size()!= 0) {</span>
+<span class="nc" id="L165">                    contributePiece.add(simPiece);</span>
+                }
+<span class="nc" id="L167">            }</span>
+<span class="nc" id="L168">            return contributePiece;</span>
+        }else{
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            for(Piece piece : board.playerCollection){</span>
+<span class="nc" id="L171">                Piece simPiece = (Piece) piece.clone();</span>
+<span class="nc" id="L172">                simPiece.targetTile(board);</span>
+<span class="nc" id="L173">                simPiece.lsTile.retainAll(possibleTiles);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">                if(simPiece.lsTile.size()!= 0) {</span>
+<span class="nc" id="L175">                    contributePiece.add(simPiece);</span>
+                }
+<span class="nc" id="L177">            }</span>
+<span class="nc" id="L178">            return contributePiece;</span>
+
+        }
+    }
+
+    /**
+     * Adds the possible target tiles that the king can move to.
+     *
+     * @param board  The game board.
+     */
+    
+    public void addPossibleTiles(Board board) {
+<span class="fc" id="L190">        possibleTiles = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L191">        int[][] directions = {{1, -1}, {1, 0}, {1, 1}, {0, 1}, {0, -1}, {-1, 1}, {-1, 0}, {-1, -1}};</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        for (int[] direction : directions) {</span>
+<span class="fc" id="L193">            int newRow = tile.getRow() + direction[0];</span>
+<span class="fc" id="L194">            int newColumn = tile.getColumn() + direction[1];</span>
+<span class="pc bpc" id="L195" title="2 of 8 branches missed.">            if (newRow &gt;= 0 &amp;&amp; newRow &lt; 14 &amp;&amp; newColumn &gt;= 0 &amp;&amp; newColumn &lt; 14) {</span>
+<span class="fc" id="L196">                Tile newTile = board.boardMatrix[newRow][newColumn];</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">                if (newTile.getPiece() == null) {</span>
+<span class="fc" id="L198">                    possibleTiles.add(newTile);</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">                } else if (newTile.getPiece().isWhite != this.isWhite) {</span>
+<span class="fc" id="L200">                    possibleTiles.add(newTile);</span>
+                }
+            }
+        }
+        
+<span class="fc" id="L205">    }</span>
+
+    /**
+     * Determines the target tiles that the king can move to and updates the lists of target tiles and captured tiles.
+     *
+     * @param board  The game board.
+     */
+    public void targetTile(Board board) {
+<span class="fc" id="L213">        addTargetTile(board);</span>
+        
+<span class="fc" id="L215">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
